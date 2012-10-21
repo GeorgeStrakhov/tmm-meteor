@@ -45,7 +45,7 @@ if (Meteor.isClient) {
   /*end of menu switcher*/
   
   Template.giants.noGiants = function() {
-    if(Giants.find().count() === 0)
+    if(Giants.find({added_by: Meteor.userId()}).count() === 0)
       return true;
   };
   
@@ -57,13 +57,13 @@ if (Meteor.isClient) {
       if($("#newGiantName").val() == "") {
         alert("please enter name!");
       } else {
-        Giants.insert({name: $("#newGiantName").val()});
+        Giants.insert({added_by: Meteor.userId(), name: $("#newGiantName").val()});
       }
     }
   });
   
   Template.allGiants.giants = function() {
-    return Giants.find();
+    return Giants.find({added_by: Meteor.userId()});
   };
   
 }
