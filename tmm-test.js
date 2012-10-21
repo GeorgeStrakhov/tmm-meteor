@@ -1,3 +1,5 @@
+Giants = new Meteor.Collection("giants");
+
 if (Meteor.isClient) {
   
   Template.app.userLogged = function() {
@@ -17,6 +19,8 @@ if (Meteor.isClient) {
     return menuItems;
   };
   
+  /*menu switcher*/
+  
   Template.mainMenu.events({
     'click .mainMenuItem' : function() {
       Session.set("activeTab", this);
@@ -24,27 +28,42 @@ if (Meteor.isClient) {
   });
   
   Template.myApp.activeGiants = function() {
-    if(!(Session.get("activeTab")) || (Session.get("activeTab") == "Giants")) {
+    if(!(Session.get("activeTab")) || (Session.get("activeTab") == "Giants"))
       return true;
-    } else {
-      return false;
-    }
   };
   
   Template.myApp.activeFeed = function() {
-    if(Session.get("activeTab") == "Feed") {
+    if(Session.get("activeTab") == "Feed")
       return true;
-    } else {
-      return false;
-    }
   };
    
   Template.myApp.activeMe = function() {
-    if(Session.get("activeTab") == "Me") {
+    if(Session.get("activeTab") == "Me")
       return true;
-    } else {
-      return false;
+  };
+  
+  /*end of menu switcher*/
+  
+  Template.giants.noGiants = function() {
+    if(Giants.find().count() === 0)
+      return true;
+  };
+  
+  Template.addGiant.events = ({
+    'click #addGiantLink' : function() {
+      $(".addGiantForm").toggle();
+    },
+    'click #addGiantButton' : function() {
+      if($("#newGiantName").val() == "") {
+        alert("please enter name!");
+      } else {
+        Giants.insert({name: $("#newGiantName").val()});
+      }
     }
+  });
+  
+  Template.allGiants.giants = function() {
+    return Giants.find();
   };
   
 }

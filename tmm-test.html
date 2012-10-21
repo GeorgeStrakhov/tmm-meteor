@@ -52,7 +52,35 @@
 </template>
 
 <template name="giants">
-  giants
+  {{#if noGiants}}
+    <p>Time add your first giant!</p>
+    {{> addGiant}}
+  {{else}}
+    {{> allGiants}}
+  {{/if}}
+</template>
+
+<template name="addGiant">
+  <a href="#" id="addGiantLink">add giant</a>
+  <div class="addGiantForm hidden">
+    <input type="text" name="newGiantName" id="newGiantName" />
+    <input type="button" id="addGiantButton" value="add" />
+  </div>
+</template>
+
+<template name="allGiants">
+  <div class="allGiants">
+    <ul class="allGiantsList">
+      {{#each giants}}
+        <li>{{> singleGiant}}</li>
+      {{/each}}
+    </ul>
+  </div>
+  {{> addGiant}}
+</template>
+
+<template name="singleGiant">
+  {{name}}
 </template>
 
 <template name="feed">
