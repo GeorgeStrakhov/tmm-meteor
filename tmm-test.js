@@ -1,15 +1,52 @@
 if (Meteor.isClient) {
-  Template.hello.greeting = function () {
-    return "Welcome to tmm-test.";
-  };
-
-  Template.hello.events({
-    'click input' : function () {
-      // template data, if any, is available in 'this'
-      if (typeof console !== 'undefined')
-        console.log("You pressed the button");
+  
+  Template.app.userLogged = function() {
+    if (Meteor.user() || Meteor.userLoaded()) {
+      return true;
+    } else {
+      return false;
     }
+  };
+  
+  Template.mainMenu.items = function() {
+    var menuItems = [
+      "Giants",
+      "Feed",
+      "Me",
+    ];
+    return menuItems;
+  };
+  
+  Template.mainMenu.events({
+    'click .mainMenuItem' : function() {
+      Session.set("activeTab", this);
+    },
   });
+  
+  Template.myApp.activeGiants = function() {
+    if(!(Session.get("activeTab")) || (Session.get("activeTab") == "Giants")) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  
+  Template.myApp.activeFeed = function() {
+    if(Session.get("activeTab") == "Feed") {
+      return true;
+    } else {
+      return false;
+    }
+  };
+   
+  Template.myApp.activeMe = function() {
+    if(Session.get("activeTab") == "Me") {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  
 }
 
 if (Meteor.isServer) {

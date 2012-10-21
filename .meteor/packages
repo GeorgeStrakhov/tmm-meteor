@@ -6,3 +6,8 @@
 autopublish
 insecure
 preserve-inputs
+accounts-base
+accounts-password
+accounts-ui
+jquery
+handlebars

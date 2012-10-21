@@ -3,11 +3,62 @@
 </head>
 
 <body>
-  {{> hello}}
+  {{> app}}
+  <div class="footer">
+    2012 | GS
+  </div>
 </body>
 
-<template name="hello">
-  <h1>Hello World!</h1>
-  {{greeting}}
-  <input type="button" value="Click" />
+<template name="app">
+  {{#if userLogged}}
+    {{> myApp}}
+  {{else}}  
+    {{> welcome}}   
+  {{/if}}
+</template>
+
+<template name="welcome">
+  {{loginButtons}}
+  <div class="container">
+    <p>Welcome to the app!</p>
+    <p>Please sign in to enjoy it.</p>
+  </div>
+</template>
+
+<template name="myApp">
+  {{loginButtons}}
+  {{> mainMenu}}
+  <div class="container">
+    {{#if activeGiants}}
+      {{> giants}}
+    {{/if}}
+    {{#if activeFeed}}
+      {{> feed}}
+    {{/if}}
+    {{#if activeMe}}
+      {{> me}}
+    {{/if}}
+  </div>
+</template>
+
+<template name="mainMenu">
+  <div class="mainMenu">
+    <ul>
+      {{#each items}}
+        <li><a href="#" id="{{this}}" class="mainMenuItem">{{this}}</a></li>
+      {{/each}}
+    </ul>
+  </div>
+</template>
+
+<template name="giants">
+  giants
+</template>
+
+<template name="feed">
+  feed
+</template>
+
+<template name="me">
+  me
 </template>
