@@ -16,10 +16,10 @@ if (Meteor.isClient) {
       if(!userGiant) { //fresh user, just registaered and we haven't created the corresponding giant yet
         var userEmail = Meteor.user().emails[0].address;
         Giants.insert({name: userEmail, added_by: Meteor.userId(), user_id: Meteor.userId()}); //creating a corresponding giant for the new user
+        Session.set("selectedGiant", userGiant);
         Session.set("activeTab", "Me"); //redirecting the fresh user to profile management tab
-      } else {
-        Session.set("userGiant", userGiant);
       }
+      Session.set("userGiant", userGiant);
       return true;
     }
   };
@@ -37,7 +37,10 @@ if (Meteor.isClient) {
   
   Template.mainMenu.events({
     'click .mainMenuItem' : function() {
+      Session.set("editGiantMode", false);
       Session.set("activeTab", this);
+      if (this == "Me")
+        Session.set("selectedGiant", Giants.findOne({user_id: Meteor.userId()}));
       if (this == "Giants")
         Session.set("selectedGiant", false);
     },
@@ -79,12 +82,12 @@ if (Meteor.isClient) {
   });
   
   Template.allGiants.giants = function() {
-    return Giants.find({added_by: Meteor.userId()});
+    return Giants.find({added_by: Meteor.userId(), user_id: { $ne: Meteor.userId() }}); //not listing user's own giant!
   };
   
   Template.allGiants.events = ({
     'click .singleGiantLink' : function() {
-      Session.set("selectedGiant", this.name);
+      Session.set("selectedGiant", this);
     }
   });
   
@@ -93,14 +96,46 @@ if (Meteor.isClient) {
   };
   
   Template.singleGiantPage.giant = function() {
-    return Giants.findOne({name: Session.get("selectedGiant")});
+    return Giants.findOne({_id: Session.get("selectedGiant")._id});
   };
   
+  Template.singleGiantPage.editGiantMode = function() {
+    return Session.get("editGiantMode");
+  }
+  
   Template.singleGiantPage.events = ({
+    'click #editGiantLink' : function() {
+      Session.set("editGiantMode", true);
+    },
+  });
+
+  Template.editGiantPage.myGiantPage = function() {
+    if(Session.get("selectedGiant")._id == Session.get("userGiant")._id)
+      return true;
+  };
+  
+  Template.editGiantPage.giant = function() {
+    return Giants.findOne({_id: Session.get("selectedGiant")._id});
+  };
+  
+  Template.editGiantPage.events = ({
     'click #removeGiant' : function() {
-      Giants.remove({name: Session.get("selectedGiant")}); //future: we should not remove here. we should simply unlink so that current user's giant doesn't
+      Giants.remove({_id: Session.get("selectedGiant")._id}); //future: we should not remove here. we should simply unlink so that current user's giant doesn't
       Session.set("selectedGiant", false);
     },
+    'click #cancelEdit' : function() {
+      Session.set("editGiantMode", false);
+    },
+    'click #saveGiantButton' : function() {
+      var updatedGiant = Giants.findOne({_id: Session.get("selectedGiant")._id});
+      if($("#newGiantName").val() == "") {
+        alert("name can't be empty!");
+      } else {
+        updatedGiant.name = $("#newGiantName").val();
+      }
+      Giants.update({_id: Session.get("selectedGiant")._id}, updatedGiant);
+      Session.set("editGiantMode", false);
+    }
   });
 }
 

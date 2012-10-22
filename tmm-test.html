@@ -88,8 +88,21 @@
 </template>
 
 <template name="singleGiantPage">
-  <h1>{{giant.name}}</h1>
-  <p><a href="#" id="removeGiant">remove this giant</a></p>
+  {{#if editGiantMode}}
+    {{> editGiantPage}}
+  {{else}}
+    <h1>{{giant.name}}</h1>
+    <p><a href="#" id="editGiantLink">edit</a></p>
+  {{/if}}
+</template>
+
+<template name="editGiantPage">
+  Name: <input type="text" name="newName" id="newGiantName" value="{{giant.name}}" />
+  <p><a href="#" id="cancelEdit">cancel</a> or 
+  <input type="button" value="save" id="saveGiantButton" /></p>
+  {{#unless myGiantPage}} <!-- you can't remove your own giant -->
+    <p><a href="#" id="removeGiant">remove this giant</a></p>
+  {{/unless}}
 </template>
 
 <template name="feed">
@@ -97,5 +110,5 @@
 </template>
 
 <template name="me">
-  profile management under construction
+  {{> singleGiantPage}}
 </template>
