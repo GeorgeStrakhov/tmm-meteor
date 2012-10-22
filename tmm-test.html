@@ -56,7 +56,11 @@
     <p>Time add your first giant!</p>
     {{> addGiant}}
   {{else}}
-    {{> allGiants}}
+    {{#if currentGiant}}
+      {{> singleGiantPage}}
+    {{else}}
+      {{> allGiants}}
+    {{/if}}
   {{/if}}
 </template>
 
@@ -72,21 +76,25 @@
   <div class="allGiants">
     <ul class="allGiantsList">
       {{#each giants}}
-        <li>{{> singleGiant}}</li>
+        <li>{{> singleGiantItem}}</li>
       {{/each}}
     </ul>
   </div>
   {{> addGiant}}
 </template>
 
-<template name="singleGiant">
-  {{name}}
+<template name="singleGiantItem">
+  <a href="#" id="{{this.name}}" class="singleGiantLink">{{name}}</a>
+</template>
+
+<template name="singleGiantPage">
+  <h1>{{giant.name}}</h1>
 </template>
 
 <template name="feed">
-  feed
+  feed under construction
 </template>
 
 <template name="me">
-  me
+  profile management under construction
 </template>
