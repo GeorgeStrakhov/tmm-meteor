@@ -56,7 +56,7 @@
     <p>Time add your first giant!</p>
     {{> addGiant}}
   {{else}}
-    {{#if currentGiant}}
+    {{#if selectedGiant}}
       {{> singleGiantPage}}
     {{else}}
       {{> allGiants}}
@@ -89,6 +89,7 @@
 
 <template name="singleGiantPage">
   <h1>{{giant.name}}</h1>
+  <p><a href="#" id="removeGiant">remove this giant</a></p>
 </template>
 
 <template name="feed">
