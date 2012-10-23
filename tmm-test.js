@@ -1,5 +1,4 @@
 /*TODO
-* me - profile management tool -> rename
 * standing on logic
 * search across the system before adding 
 * bootstrap / nicer UI
@@ -16,7 +15,7 @@ if (Meteor.isClient) {
       if(!userGiant) { //fresh user, just registaered and we haven't created the corresponding giant yet
         var userEmail = Meteor.user().emails[0].address;
         Giants.insert({name: userEmail, added_by: Meteor.userId(), user_id: Meteor.userId()}); //creating a corresponding giant for the new user
-        Session.set("selectedGiant", userGiant);
+        Session.set("selectedGiant", Giants.findOne({user_id: Meteor.userId()}));
         Session.set("activeTab", "Me"); //redirecting the fresh user to profile management tab
       }
       Session.set("userGiant", userGiant);
@@ -64,7 +63,7 @@ if (Meteor.isClient) {
   /*end of top menu switcher*/
   
   Template.giants.noGiants = function() {
-    if(Giants.find({added_by: Meteor.userId()}).count() === 0)
+    if(Giants.find({added_by: Meteor.userId(), user_id: { $ne: Meteor.userId() }}).count() === 0)
       return true;
   };
   
@@ -108,6 +107,20 @@ if (Meteor.isClient) {
       Session.set("editGiantMode", true);
     },
   });
+  
+  Template.isStandingOn.giant = function() {
+    return Giants.findOne({_id: Session.get("selectedGiant")._id});
+  };
+  
+  Template.isStandingOn.myGiants = function() {
+    var userGiant = Giants.findOne({_id: Session.get("userGiant")._id});
+    return userGiant.myGiants;
+  };
+  
+  Template.areStandingOnMe.myDwarfs = function() {
+    var userGiant = Giants.findOne({_id: Session.get("userGiant")._id});
+    return userGiant.myDwarfs;
+  };
 
   Template.editGiantPage.myGiantPage = function() {
     if(Session.get("selectedGiant")._id == Session.get("userGiant")._id)
@@ -128,11 +141,16 @@ if (Meteor.isClient) {
     },
     'click #saveGiantButton' : function() {
       var updatedGiant = Giants.findOne({_id: Session.get("selectedGiant")._id});
+      //new name
       if($("#newGiantName").val() == "") {
         alert("name can't be empty!");
       } else {
         updatedGiant.name = $("#newGiantName").val();
       }
+      //new description
+      updatedGiant.description = $("#newGiantDescription").val();
+      //new connections
+        //underconstruction...
       Giants.update({_id: Session.get("selectedGiant")._id}, updatedGiant);
       Session.set("editGiantMode", false);
     }

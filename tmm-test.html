@@ -84,7 +84,7 @@
 </template>
 
 <template name="singleGiantItem">
-  <a href="#" id="{{this.name}}" class="singleGiantLink">{{name}}</a>
+  <a href="#" id="{{this.name}}" class="singleGiantLink">{{this.name}}</a>
 </template>
 
 <template name="singleGiantPage">
@@ -92,21 +92,53 @@
     {{> editGiantPage}}
   {{else}}
     <h1>{{giant.name}}</h1>
+    <em>{{giant.description}}</em>
+    {{> isStandingOn}}
+    {{> areStandingOnMe}}
     <p><a href="#" id="editGiantLink">edit</a></p>
   {{/if}}
 </template>
 
+<template name="isStandingOn">
+  <div>
+    <p>People {{giant.name}} is standing on:</p>
+    <ul>
+      {{#each myGiants}}
+        <!-- here we need to have if editing or not-->
+        <li>{{> singleGiantItem}}</li>
+      {{/each}}
+    </ul>
+  </div>
+</template>
+
+<template name="areStandingOnMe">
+  <div>
+    <p>People standing on {{giant.name}}:</p>
+    <ul>
+      {{#each myDwarfs}}
+        <!-- here we need to have if editing or not-->
+        <li>{{> singleGiantItem}}</li>
+      {{/each}}
+    </ul>
+  </div>
+</template>
+
 <template name="editGiantPage">
   Name: <input type="text" name="newName" id="newGiantName" value="{{giant.name}}" />
+  <br />
+  Description: <textarea name="newGiantDescription" id="newGiantDescription">{{giant.description}}</textarea>
+  <br />
+  {{> isStandingOn}}
+  {{> areStandingOnMe}}
   <p><a href="#" id="cancelEdit">cancel</a> or 
   <input type="button" value="save" id="saveGiantButton" /></p>
-  {{#unless myGiantPage}} <!-- you can't remove your own giant -->
+  {{#unless myGiantPage}} <!-- you can't remove your own giant! -->
     <p><a href="#" id="removeGiant">remove this giant</a></p>
   {{/unless}}
 </template>
 
 <template name="feed">
-  feed under construction
+  feed under construction...
 </template>
 
 <template name="me">
