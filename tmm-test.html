@@ -75,9 +75,6 @@
 
 <template name="singleGiantItem">
     <a href="#" id="{{this.name}}" class="singleGiantLink">{{this.name}}</a>
-  {{#if editGiantMode}}
-    remove (under construction)
-  {{/if}}
 </template>
 
 <template name="singleGiantPage">
@@ -87,11 +84,21 @@
     {{#unless myGiantsTab}}
       <h1>{{giant.name}}</h1>
       <em>{{giant.description}}</em>
+      <div>
+        {{#unless iAmStandingOnHim}}
+          {{#unless itsMe}}<!--standing onyourself will make you shorter! -->
+            <a href="#" id="addToMyGiants">add {{giant.name}} to my Giants</a>
+          {{/unless}}
+        {{/unless}}
+        {{#if iAmStandingOnHim}}
+          <a href="#" id="removeFromMyGiants">remove {{giant.name}} from my Giants</a>
+        {{/if}}
+      </div>
     {{/unless}}
     {{> isStandingOn}}
     {{#unless myGiantsTab}}
       {{> areStandingOnMe}}
-      <p><a href="#" id="editGiantLink">edit</a></p>
+      <p><a href="#" id="editGiantLink">edit this giant</a></p>
     {{/unless}}
   {{/if}}
 </template>
@@ -130,9 +137,6 @@
   {{> areStandingOnMe}}
   <p><a href="#" id="cancelEdit">cancel</a> or 
   <input type="button" value="save" id="saveGiantButton" /></p>
-  {{#unless myGiantPage}} <!-- you can't remove your own giant! -->
-    <p><a href="#" id="removeGiant">remove this giant</a></p>
-  {{/unless}}
 </template>
 
 <template name="feed">

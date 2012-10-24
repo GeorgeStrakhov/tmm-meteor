@@ -1,6 +1,5 @@
 /*TODO
-* sort out Selected Giant thingfix standing on logic (now everybody is standing on everybody if added from the SingleGiantPage and renaming doesn't fully work
-* add people standing on him logic
+* add myDwarfs logic
 * search across the system before adding and display suggestion instead of alert
 * implement backbone router for url parts handling 
 * bootstrap / nicer UI
@@ -17,6 +16,7 @@ if (Meteor.isClient) {
       {name: "Feed", text: "feed", isActive: false},
       {name: "Me", text: "me", isActive: false}
     ]);
+    Session.set("activeTab", "Giants");
   });
   
   /*different *reactive* helper functions for the Client start here*/
@@ -50,13 +50,14 @@ if (Meteor.isClient) {
       var userGiant = Giants.findOne({userId: Meteor.userId()});
       if(!userGiant) { //fresh user, just registaered and we haven't created the corresponding giant yet
         var userEmail = Meteor.user().emails[0].address;
-        var newUserGiantId = Giants.insert({name: userEmail, addedBy: Meteor.userId(), userId: Meteor.userId()}); //creating a corresponding giant for the new user
+        var newUserGiantId = Giants.insert({name: userEmail, addedBy: Meteor.userId(), userId: Meteor.userId(), myGiants: [], myDwarfs: []}); //creating a corresponding giant for the new user
         Session.set("selectedGiant", Giants.findOne({userId: Meteor.userId()}));
         Session.set("editGiantMode", true);
         Session.set("activeTab", "Me"); //redirecting the fresh user to profile management tab
         userGiant = Giants.findOne(newUserGiantId);
       }
       Session.set("userGiant", userGiant);
+      Session.set("selectedGiant", userGiant);
       return true;
     }
   };
@@ -110,10 +111,10 @@ if (Meteor.isClient) {
         } else { //no such giant in the DB yet, creating a new one
           newGiantId = Giants.insert({addedBy: Meteor.userId(), myDwarfs: [{name: selectedGiant.name, dwarfId: selectedGiant._id}], name: newGiantName}); //create a new giant & don't forget to state that selected Giant is standing on his shoulders
         }
-        if (!selectedGiant.myGiants)
-          selectedGiant.myGiants = []; //FIX HERE(!)
+        if(!selectedGiant.myGiants)
+          selectedGiant.myGiants=[];
         selectedGiant.myGiants.push({_id: newGiantId});
-        Giants.update({_id: selectedGiant._id}, selectedGiant); //update selected giant to state that this selected Giant's giant is standing on this giant (dude, that's unreadable ;((( sorry)
+        Giants.update({_id: selectedGiant._id}, selectedGiant); //update selected giant - push new item into his myGiants array
         if(!(Session.get("selectedGiant") == Session.get("userGiant")))
           Session.set("selectedGiant", Giants.findOne(selectedGiant._id));
       }
@@ -132,6 +133,20 @@ if (Meteor.isClient) {
     return Giants.findOne({_id: Session.get("selectedGiant")._id});
   };
   
+  Template.singleGiantPage.itsMe = function() {
+    return Session.get("selectedGiant")._id == Session.get("userGiant")._id;
+  };
+  
+  Template.singleGiantPage.iAmStandingOnHim = function() {
+    var result = false;
+    for (i=0; i<Session.get("userGiant").myGiants.length; i++) {
+      //console.log(Session.get("userGiant").myGiants[i]);
+      if(Session.get("selectedGiant")._id == Session.get("userGiant").myGiants[i]._id)
+        result = true;
+    }
+    return result;
+  };
+  
   Template.singleGiantPage.myGiantsTab = function() { //if we're on the myGiants tab where we only display the list of giants userGiant is standing on
     return Session.get("activeTab") == "Giants";
   };
@@ -144,6 +159,27 @@ if (Meteor.isClient) {
     'click #editGiantLink' : function() {
       Session.set("editGiantMode", true);
     },
+    'click #addToMyGiants' : function() {
+      //FIX first update selectedGiant.mydwarfs
+      //second update userGiant.myGiants
+      Giants.update({_id: Session.get("userGiant")._id}, {$push : {myGiants: {_id: Session.get("selectedGiant")._id}}});
+      //FIX reactivity tricks here: we don't need to jump out of this current context here
+    },
+    'click #removeFromMyGiants' : function() {
+      //FIX first update selectedGiant.mydwarfs
+      //second update userGiant.myGiants
+      var updatedUserGiant = Session.get("userGiant");
+      var updatedMyGiants = [];
+      for (i=0; i<updatedUserGiant.myGiants.length; i++) {
+        //console.log(Session.get("selectedGiant")._id);
+        //console.log(updatedUserGiant.myGiants[i]._id);
+        if(!(updatedUserGiant.myGiants[i]._id == Session.get("selectedGiant")._id)) {
+          updatedMyGiants.push(updatedUserGiant.myGiants[i]);
+        }
+      }
+      updatedUserGiant.myGiants = updatedMyGiants;
+      Giants.update({_id: Session.get("userGiant")._id}, updatedUserGiant);
+    }
   });
   
   Template.isStandingOn.giant = function() {
@@ -195,10 +231,6 @@ if (Meteor.isClient) {
   };
   
   Template.editGiantPage.events = ({
-    'click #removeGiant' : function() {
-      //Giants.remove({_id: Session.get("selectedGiant")._id}); //future: we should not remove here. we should simply unlink so that current user's giant doesn't
-      Session.set("selectedGiant", Session.get("userGiant"));
-    },
     'click #cancelEdit' : function() {
       Session.set("editGiantMode", false);
     },
@@ -227,6 +259,5 @@ if (Meteor.isClient) {
 if (Meteor.isServer) {
   Meteor.startup(function () {
     // code to run on server at startup
-  });
-  
+  });  
 }
