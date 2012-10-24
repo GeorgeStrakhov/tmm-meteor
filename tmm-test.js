@@ -1,8 +1,11 @@
 /*TODO
-* add myDwarfs logic
-* search across the system before adding and display suggestion instead of alert
-* implement backbone router for url parts handling 
+* fix the final bit of dwarf logc (search FIX HERE) - try changing order
+* I should not be able to add myself (userGiant) to somebody's giants
+* I should not be able to edit another giant if he is a user (?)
+* search across the system before adding and display suggestion instead of alert or quietly adding
+* implement backbone router for url parts handling (sync it with "activeTab"
 * bootstrap / nicer UI
+* add photo uploading with filepicker.io (meteor example on github)
 */
 Giants = new Meteor.Collection("giants");
 
@@ -107,14 +110,28 @@ if (Meteor.isClient) {
         var newGiantName = $("#newGiantName").val();
         var newGiantId;
         if(Giants.findOne({name: newGiantName})) { //if there is a giant with such name
-          alert("such a giant exists!");
+          //first check if this giant is already standing on him
+          var alreadyStanding = false;
+          for(i=0; i<selectedGiant.myGiants.length; i++) {
+            if(selectedGiant.myGiants[i]._id == Giants.findOne({name: newGiantName})._id)
+              alreadyStanding = true;
+          }
+          if(alreadyStanding) {
+            alert("already standing!");
+          } else {//if not already standing -> proceed to add
+            //first update that giant.myDwarfs
+            Giants.update({_id: Giants.findOne({name: newGiantName})._id}, {$push: {myDwarfs: {_id: Session.get("selectedGiant")._id}}});
+            //second update selectedGiant.myGiants
+            Giants.update({_id: Session.get("selectedGiant")._id},{$push: {myGiants: {_id: Giants.findOne({name: newGiantName})._id}}});
+            console.log('added an existing giant!')//FIX - make it search and suggest!
+          }
         } else { //no such giant in the DB yet, creating a new one
-          newGiantId = Giants.insert({addedBy: Meteor.userId(), myDwarfs: [{name: selectedGiant.name, dwarfId: selectedGiant._id}], name: newGiantName}); //create a new giant & don't forget to state that selected Giant is standing on his shoulders
-        }
+          newGiantId = Giants.insert({addedBy: Meteor.userId(), myDwarfs: [{_id: selectedGiant._id}], myGiants:[], name: newGiantName}); //create a new giant & don't forget to state that selected Giant is standing on his shoulders
         if(!selectedGiant.myGiants)
           selectedGiant.myGiants=[];
         selectedGiant.myGiants.push({_id: newGiantId});
         Giants.update({_id: selectedGiant._id}, selectedGiant); //update selected giant - push new item into his myGiants array
+        }
         if(!(Session.get("selectedGiant") == Session.get("userGiant")))
           Session.set("selectedGiant", Giants.findOne(selectedGiant._id));
       }
@@ -124,6 +141,13 @@ if (Meteor.isClient) {
   Template.singleGiantItem.editGiantMode = function() {
     return Session.get("editGiantMode");
   };
+  
+  Template.singleGiantItem.events = ({
+    'click' : function() {
+      Session.set("activeTab", "SingleGiant");
+      Session.set("selectedGiant", Giants.findOne(this._id));
+    }
+  });
   
   Template.giants.selectedGiant = function() {
     return Session.get("selectedGiant")
@@ -160,13 +184,23 @@ if (Meteor.isClient) {
       Session.set("editGiantMode", true);
     },
     'click #addToMyGiants' : function() {
-      //FIX first update selectedGiant.mydwarfs
+      //first update selectedGiant.mydwarfs
+      Giants.update({_id: Session.get("selectedGiant")._id}, {$push : {myDwarfs: {_id: Session.get("userGiant")._id}}});
       //second update userGiant.myGiants
       Giants.update({_id: Session.get("userGiant")._id}, {$push : {myGiants: {_id: Session.get("selectedGiant")._id}}});
       //FIX reactivity tricks here: we don't need to jump out of this current context here
     },
     'click #removeFromMyGiants' : function() {
-      //FIX first update selectedGiant.mydwarfs
+      //first update selectedGiant.mydwarfs
+      var updatedSelectedGiant = Session.get("selectedGiant");
+      var updatedMyDwarfs = [];
+      for (i=0; i<updatedSelectedGiant.myDwarfs.length; i++) {
+        if(!(updatedSelectedGiant.myDwarfs[i]._id == Session.get("userGiant")._id)) {
+          updatedMyDwarfs.push(updatedSelectedGiant.myDwarfs[i]);
+        }
+      }
+      updatedSelectedGiant.myDwarfs = updatedMyDwarfs;
+      Giants.update({_id: Session.get("selectedGiant")._id}, updatedSelectedGiant);
       //second update userGiant.myGiants
       var updatedUserGiant = Session.get("userGiant");
       var updatedMyGiants = [];
@@ -204,21 +238,17 @@ if (Meteor.isClient) {
     return allHisGiants;
   };
   
-  Template.isStandingOn.events = ({
-    'click .singleGiantLink' : function() {
-      //console.log(this);
-      Session.set("activeTab", "SingleGiant");
-      Session.set("selectedGiant", Giants.findOne(this._id));
-    }
-  });
-  
   Template.areStandingOnMe.giant = function() {
     return Giants.findOne({_id: Session.get("selectedGiant")._id});
   };
 
   Template.areStandingOnMe.myDwarfs = function() {
-    var userGiant = Giants.findOne({_id: Session.get("userGiant")._id});
-    return userGiant.myDwarfs;
+    var selectedGiant = Giants.findOne({_id: Session.get("selectedGiant")._id});
+    var allHisDwarfs = [];
+    for (i=0; i<selectedGiant.myDwarfs.length; i++) {
+      allHisDwarfs.push(Giants.findOne(selectedGiant.myDwarfs[i]._id));
+    }
+    return allHisDwarfs;
   };
 
   Template.editGiantPage.myGiantPage = function() {
