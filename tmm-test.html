@@ -29,14 +29,17 @@
   {{loginButtons}}
   {{> mainMenu}}
   <div class="container">
-    {{#if activeGiants}}
+    {{#if activeTab "Giants"}}
       {{> giants}}
     {{/if}}
-    {{#if activeFeed}}
+    {{#if activeTab "Feed"}}
       {{> feed}}
     {{/if}}
-    {{#if activeMe}}
+    {{#if activeTab "Me"}}
       {{> me}}
+    {{/if}}
+    {{#if activeTab "SingleGiant"}}
+      {{> singleGiantPage}}
     {{/if}}
   </div>
 </template>
@@ -45,7 +48,7 @@
   <div class="mainMenu">
     <ul>
       {{#each items}}
-        <li><a href="#" id="{{this}}" class="mainMenuItem">{{this}}</a></li>
+        <li><a href="#" id="{{this.name}}" class="mainMenuItem {{#if this.isActive}}activeTab{{/if}}">{{this.text}}</a></li>
       {{/each}}
     </ul>
   </div>
@@ -56,67 +59,62 @@
     <p>Time add your first giant!</p>
     {{> addGiant}}
   {{else}}
-    {{#if selectedGiant}}
-      {{> singleGiantPage}}
-    {{else}}
-      {{> allGiants}}
-    {{/if}}
+    {{> singleGiantPage}}
   {{/if}}
 </template>
 
 <template name="addGiant">
-  <a href="#" id="addGiantLink">add giant</a>
-  <div class="addGiantForm hidden">
-    <input type="text" name="newGiantName" id="newGiantName" />
-    <input type="button" id="addGiantButton" value="add" />
-  </div>
-</template>
-
-<template name="allGiants">
-  <div class="allGiants">
-    <ul class="allGiantsList">
-      {{#each giants}}
-        <li>{{> singleGiantItem}}</li>
-      {{/each}}
-    </ul>
-  </div>
-  {{> addGiant}}
+  {{#unless editGiantMode}}
+    <a href="#" id="addGiantLink">add one</a>
+    <div class="addGiantForm hidden">
+      <input type="text" name="newGiantName" id="newGiantName" />
+      <input type="button" id="addGiantButton" value="add" />
+    </div>
+  {{/unless}}
 </template>
 
 <template name="singleGiantItem">
-  <a href="#" id="{{this.name}}" class="singleGiantLink">{{this.name}}</a>
+    <a href="#" id="{{this.name}}" class="singleGiantLink">{{this.name}}</a>
+  {{#if editGiantMode}}
+    remove (under construction)
+  {{/if}}
 </template>
 
 <template name="singleGiantPage">
   {{#if editGiantMode}}
     {{> editGiantPage}}
   {{else}}
-    <h1>{{giant.name}}</h1>
-    <em>{{giant.description}}</em>
+    {{#unless myGiantsTab}}
+      <h1>{{giant.name}}</h1>
+      <em>{{giant.description}}</em>
+    {{/unless}}
     {{> isStandingOn}}
-    {{> areStandingOnMe}}
-    <p><a href="#" id="editGiantLink">edit</a></p>
+    {{#unless myGiantsTab}}
+      {{> areStandingOnMe}}
+      <p><a href="#" id="editGiantLink">edit</a></p>
+    {{/unless}}
   {{/if}}
 </template>
 
 <template name="isStandingOn">
   <div>
-    <p>People {{giant.name}} is standing on:</p>
+    {{#unless myGiantsTab}}
+      <p>People <strong>{{giant.name}}</strong> is standing on:</p>
+    {{/unless}}
     <ul>
       {{#each myGiants}}
-        <!-- here we need to have if editing or not-->
         <li>{{> singleGiantItem}}</li>
       {{/each}}
     </ul>
+    <p>{{> addGiant}}</p>
   </div>
 </template>
 
 <template name="areStandingOnMe">
   <div>
-    <p>People standing on {{giant.name}}:</p>
+    <p>People standing on <strong>{{giant.name}}</strong>:</p>
     <ul>
       {{#each myDwarfs}}
-        <!-- here we need to have if editing or not-->
         <li>{{> singleGiantItem}}</li>
       {{/each}}
     </ul>
