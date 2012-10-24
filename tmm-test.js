@@ -1,6 +1,4 @@
 /*TODO
-* fix the final bit of dwarf logc (search FIX HERE) - try changing order
-* I should not be able to add myself (userGiant) to somebody's giants
 * I should not be able to edit another giant if he is a user (?)
 * search across the system before adding and display suggestion instead of alert or quietly adding
 * implement backbone router for url parts handling (sync it with "activeTab"
@@ -118,12 +116,14 @@ if (Meteor.isClient) {
           }
           if(alreadyStanding) {
             alert("already standing!");
+          } else if(Session.get("userGiant")._id == Giants.findOne({name: newGiantName})._id) { //check if I'm trying to add myself
+            alert("adding yourself is not allowed!");
           } else {//if not already standing -> proceed to add
             //first update that giant.myDwarfs
             Giants.update({_id: Giants.findOne({name: newGiantName})._id}, {$push: {myDwarfs: {_id: Session.get("selectedGiant")._id}}});
             //second update selectedGiant.myGiants
             Giants.update({_id: Session.get("selectedGiant")._id},{$push: {myGiants: {_id: Giants.findOne({name: newGiantName})._id}}});
-            console.log('added an existing giant!')//FIX - make it search and suggest!
+            //FIX - make it search and suggest!
           }
         } else { //no such giant in the DB yet, creating a new one
           newGiantId = Giants.insert({addedBy: Meteor.userId(), myDwarfs: [{_id: selectedGiant._id}], myGiants:[], name: newGiantName}); //create a new giant & don't forget to state that selected Giant is standing on his shoulders
