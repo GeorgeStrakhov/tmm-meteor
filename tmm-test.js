@@ -1,5 +1,5 @@
 /*TODO
-* I should not be able to edit another giant if he is a user (?)
+* I should not be able to edit another giant's name and description if he is also a user (?)
 * search across the system before adding and display suggestion instead of alert or quietly adding
 * implement backbone router for url parts handling (sync it with "activeTab"
 * bootstrap / nicer UI
@@ -181,7 +181,12 @@ if (Meteor.isClient) {
   
   Template.singleGiantPage.events = ({
     'click #editGiantLink' : function() {
-      Session.set("editGiantMode", true);
+      console.log(Session.get("selectedGiant"));
+      if((Session.get("selectedGiant")._id == Session.get("userGiant")._id) || !(Session.get("selectedGiant").userId)) {//if this giant is me or is not a user 
+        Session.set("editGiantMode", true);
+      } else {
+        alert("sorry, you can't edit this giant's name and description, because he is also a user");
+      }
     },
     'click #addToMyGiants' : function() {
       //first update selectedGiant.mydwarfs
