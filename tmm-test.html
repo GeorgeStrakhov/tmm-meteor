@@ -90,6 +90,7 @@
     {{#unless myGiantsTab}}
       <h1>{{giant.name}}</h1>
       <em>{{giant.description}}</em>
+      <div>{{> giantPicture}}</div>
       <div>
         {{#unless iAmStandingOnHim}}
           {{#unless itsMe}}<!--standing onyourself will make you shorter! -->
@@ -107,6 +108,24 @@
       <p><a href="#" id="editGiantLink">edit this giant</a></p>
     {{/unless}}
   {{/if}}
+</template>
+
+<template name="editGiantPage">
+  <p>Name: <input type="text" name="newName" id="newGiantName" value="{{giant.name}}" />
+  </p>
+  <p>
+  Description: <textarea name="newGiantDescription" id="newGiantDescription">{{giant.description}}</textarea>
+  </p>
+  Picture: {{>giantPicture}}
+  <p><a href="#" id="uploadNewPicture">upload new</a></p>
+  {{> isStandingOn}}
+  {{> areStandingOnMe}}
+  <p><a href="#" id="cancelEdit">cancel</a> or 
+  <input type="button" value="save" id="saveGiantButton" /></p>
+</template>
+
+<template name="giantPicture">
+  <img src="{{pictureUrl}}" alt="{{giant.name}}" />
 </template>
 
 <template name="isStandingOn">
@@ -132,17 +151,6 @@
       {{/each}}
     </ul>
   </div>
-</template>
-
-<template name="editGiantPage">
-  Name: <input type="text" name="newName" id="newGiantName" value="{{giant.name}}" />
-  <br />
-  Description: <textarea name="newGiantDescription" id="newGiantDescription">{{giant.description}}</textarea>
-  <br />
-  {{> isStandingOn}}
-  {{> areStandingOnMe}}
-  <p><a href="#" id="cancelEdit">cancel</a> or 
-  <input type="button" value="save" id="saveGiantButton" /></p>
 </template>
 
 <template name="feed">

@@ -1,8 +1,9 @@
 /*TODO
-* search across the system before adding and display suggestion instead of alert or quietly adding
+* make photo uploading nicer with filepicker options and image transformations
+* don't allow changing giant's photo if he is also a user
 * implement backbone router for url parts handling (sync it with "activeTab"?) and back button behavior - read here: http://stackoverflow.com/questions/13042717/dry-using-handlebars-and-twitter-bootstrap-in-meteor/13055380#13055380
 * bootstrap / nicer UI
-* add photo uploading with filepicker.io (meteor example on github)
+* search across the system before adding and display suggestion instead of prompt
 * add email to meteor.users and email verification through SMTP on via google apps
 */
 Giants = new Meteor.Collection("giants");
@@ -12,7 +13,8 @@ Giants = new Meteor.Collection("giants");
 if (Meteor.isClient) {
 
   Meteor.startup(function() {
-    Session.set("menuItems", [
+    filepicker.setKey('AlzKrtCylR8eeNUIgl4zmz'); //setting filepicker
+    Session.set("menuItems", [ //setting up the menu
       {name: "Giants", text: "My Giants", isActive: false},
       {name: "Feed", text: "feed", isActive: false},
       {name: "Me", text: "me", isActive: false}
@@ -239,6 +241,18 @@ if (Meteor.isClient) {
     }
   });
   
+  Template.giantPicture.pictureUrl = function() {
+    if(Session.get("selectedGiant").picUrl) {
+      return Session.get("selectedGiant").picUrl;
+    } else {
+      return "/img/defaultGiant.png";
+    }
+  };
+  
+  Template.giantPicture.giant = function() {
+    return Session.get("selectedGiant");
+  };
+  
   Template.isStandingOn.giant = function() {
     return Giants.findOne({_id: Session.get("selectedGiant")._id});
   };
@@ -287,7 +301,13 @@ if (Meteor.isClient) {
     'click #cancelEdit' : function() {
       Session.set("editGiantMode", false);
     },
-    'click #saveGiantButton' : function() {
+    'click #uploadNewPicture' : function() {
+      filepicker.pick({mimetypes:['image/*']}, function(fpfile) {
+        //console.log(fpfile);
+        Giants.update({_id: Session.get("selectedGiant")._id},{$set: {picUrl: fpfile.url}});
+      });
+    },
+    'click #saveGiantButton' : function() { //FIX we are saving picture before clicking save button now
       var updatedGiant = Giants.findOne({_id: Session.get("selectedGiant")._id});
       //new name
       if($("#newGiantName").val() == "") {
