@@ -43,7 +43,7 @@ if (Meteor.isClient) {
       Session.set("selectedGiant", Session.get("userGiant"));
   });
   
-  /* end of helper functions */
+  /* end of *reactive* helper functions */
   
   Template.app.userLogged = function() {
     if (Meteor.user() && Meteor.userLoaded()) {
@@ -117,12 +117,15 @@ if (Meteor.isClient) {
             alert("already standing!");
           } else if(Session.get("userGiant")._id == Giants.findOne({name: newGiantName})._id) { //check if I'm trying to add myself
             alert("adding yourself is not allowed!");
-          } else {//if not already standing -> proceed to add
-            //first update that giant.myDwarfs
-            Giants.update({_id: Giants.findOne({name: newGiantName})._id}, {$push: {myDwarfs: {_id: Session.get("selectedGiant")._id}}});
-            //second update selectedGiant.myGiants
-            Giants.update({_id: Session.get("selectedGiant")._id},{$push: {myGiants: {_id: Giants.findOne({name: newGiantName})._id}}});
-            //FIX - make it search and suggest!
+          } else {//if not already standing
+            //suggest this giant to the user and see if he agrees to adding it
+            var yesIWantToAddThisGiant = confirm("Giant "+newGiantName+" already exists in the system. Do you want to add?");
+            if(yesIWantToAddThisGiant) {//if he agrees -> proceed to adding. Else - do nothing.
+              //first update that giant.myDwarfs
+              Giants.update({_id: Giants.findOne({name: newGiantName})._id}, {$push: {myDwarfs: {_id: Session.get("selectedGiant")._id}}});
+              //second update selectedGiant.myGiants
+              Giants.update({_id: Session.get("selectedGiant")._id},{$push: {myGiants: {_id: Giants.findOne({name: newGiantName})._id}}});
+            }
           }
         } else { //no such giant in the DB yet, creating a new one
           newGiantId = Giants.insert({addedBy: Meteor.userId(), myDwarfs: [{_id: selectedGiant._id}], myGiants:[], name: newGiantName}); //create a new giant & don't forget to state that selected Giant is standing on his shoulders
