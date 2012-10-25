@@ -74,7 +74,13 @@
 </template>
 
 <template name="singleGiantItem">
-    <a href="#" id="{{this.name}}" class="singleGiantLink">{{this.name}}</a>
+    <a href="#" id="{{this.name}}" class="singleGiantLink">
+      {{#if itIsMe}}
+        you
+      {{else}}
+        {{this.name}}
+      {{/if}}
+    </a>
 </template>
 
 <template name="singleGiantPage">

@@ -1,8 +1,9 @@
 /*TODO
 * search across the system before adding and display suggestion instead of alert or quietly adding
-* implement backbone router for url parts handling (sync it with "activeTab"
+* implement backbone router for url parts handling (sync it with "activeTab"?) and back button behavior - read here: http://stackoverflow.com/questions/13042717/dry-using-handlebars-and-twitter-bootstrap-in-meteor/13055380#13055380
 * bootstrap / nicer UI
 * add photo uploading with filepicker.io (meteor example on github)
+* add email to meteor.users and email verification through SMTP on via google apps
 */
 Giants = new Meteor.Collection("giants");
 
@@ -12,7 +13,7 @@ if (Meteor.isClient) {
 
   Meteor.startup(function() {
     Session.set("menuItems", [
-      {name: "Giants", text: "Giants", isActive: false},
+      {name: "Giants", text: "My Giants", isActive: false},
       {name: "Feed", text: "feed", isActive: false},
       {name: "Me", text: "me", isActive: false}
     ]);
@@ -41,6 +42,10 @@ if (Meteor.isClient) {
     //console.log(Session.get("selectedGiant"));
     if(!Session.get("selectedGiant"))
       Session.set("selectedGiant", Session.get("userGiant"));
+  });
+  
+  Meteor.autosubscribe(function() { //this changes displaying name to "you" where applicable
+  
   });
   
   /* end of *reactive* helper functions */
@@ -95,10 +100,13 @@ if (Meteor.isClient) {
   Template.addGiant.events = ({
     'click #addGiantLink' : function() {
       $(".addGiantForm").toggle();
+      $("#newGiantName").focus();
     },
     'click #addGiantButton' : function() {
       if($("#newGiantName").val() == "") {
         alert("please enter name!");
+      } else if($("#newGiantName").val() == "you") {
+              alert("'you' is a reserved word, please use a different name");
       } else {
         var selectedGiant = Session.get("selectedGiant");
         if(!selectedGiant)
@@ -142,6 +150,10 @@ if (Meteor.isClient) {
   
   Template.singleGiantItem.editGiantMode = function() {
     return Session.get("editGiantMode");
+  };
+  
+  Template.singleGiantItem.itIsMe = function() {
+    return this._id == Session.get("userGiant")._id;
   };
   
   Template.singleGiantItem.events = ({
@@ -280,8 +292,10 @@ if (Meteor.isClient) {
       //new name
       if($("#newGiantName").val() == "") {
         alert("name can't be empty!");
+      } else if($("#newGiantName").val() == "you") {
+         alert("'you' is a reserved word, please use a different name");
       } else if (Giants.findOne({name: $("#newGiantName").val()}) && !(Session.get("selectedGiant")._id == Giants.findOne({name: $("#newGiantName").val()})._id)) { //such a giant already exists and it's not this very one
-        alert("giant with this name already exists!");
+        alert("giant with this name already exists! please choose another name");
       } else {
         updatedGiant.name = $("#newGiantName").val();
         //new description
