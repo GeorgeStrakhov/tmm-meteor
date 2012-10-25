@@ -1,5 +1,4 @@
 /*TODO
-* I should not be able to edit another giant's name and description if he is also a user (?)
 * search across the system before adding and display suggestion instead of alert or quietly adding
 * implement backbone router for url parts handling (sync it with "activeTab"
 * bootstrap / nicer UI
@@ -181,7 +180,6 @@ if (Meteor.isClient) {
   
   Template.singleGiantPage.events = ({
     'click #editGiantLink' : function() {
-      console.log(Session.get("selectedGiant"));
       if((Session.get("selectedGiant")._id == Session.get("userGiant")._id) || !(Session.get("selectedGiant").userId)) {//if this giant is me or is not a user 
         Session.set("editGiantMode", true);
       } else {
@@ -190,13 +188,17 @@ if (Meteor.isClient) {
     },
     'click #addToMyGiants' : function() {
       //first update selectedGiant.mydwarfs
+      var thisGiantId = Session.get("selectedGiant")._id;
       Giants.update({_id: Session.get("selectedGiant")._id}, {$push : {myDwarfs: {_id: Session.get("userGiant")._id}}});
       //second update userGiant.myGiants
       Giants.update({_id: Session.get("userGiant")._id}, {$push : {myGiants: {_id: Session.get("selectedGiant")._id}}});
-      //FIX reactivity tricks here: we don't need to jump out of this current context here
+      //third make sure that we stay on this giants page despite reactivity wants to take us to userGiant's page
+      Meteor.flush();
+      Session.set("selectedGiant", Giants.findOne(thisGiantId));
     },
     'click #removeFromMyGiants' : function() {
       //first update selectedGiant.mydwarfs
+      var thisGiantId = Session.get("selectedGiant")._id;
       var updatedSelectedGiant = Session.get("selectedGiant");
       var updatedMyDwarfs = [];
       for (i=0; i<updatedSelectedGiant.myDwarfs.length; i++) {
@@ -210,14 +212,15 @@ if (Meteor.isClient) {
       var updatedUserGiant = Session.get("userGiant");
       var updatedMyGiants = [];
       for (i=0; i<updatedUserGiant.myGiants.length; i++) {
-        //console.log(Session.get("selectedGiant")._id);
-        //console.log(updatedUserGiant.myGiants[i]._id);
         if(!(updatedUserGiant.myGiants[i]._id == Session.get("selectedGiant")._id)) {
           updatedMyGiants.push(updatedUserGiant.myGiants[i]);
         }
       }
       updatedUserGiant.myGiants = updatedMyGiants;
       Giants.update({_id: Session.get("userGiant")._id}, updatedUserGiant);
+      //third make sure that we stay on this giants page despite reactivity wants to take us to userGiant's page
+      Meteor.flush();
+      Session.set("selectedGiant", Giants.findOne(thisGiantId));
     }
   });
   
