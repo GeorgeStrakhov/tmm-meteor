@@ -243,7 +243,7 @@ if (Meteor.isClient) {
   
   Template.giantPicture.pictureUrl = function() {
     if(Session.get("selectedGiant").picUrl) {
-      return Session.get("selectedGiant").picUrl;
+      return Session.get("selectedGiant").picUrl+"/convert?w=200&h=150&fit=clip"; //utilizing filepicker's image conversions
     } else {
       return "/img/defaultGiant.png";
     }
